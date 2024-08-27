@@ -1,2 +1,2 @@
-# Data_Course_ALVAREZThis README file contains information about my uploaded assignments
+# Data_Course_ALVAREZ
 This README file contains information about my uploaded assignments
