@@ -1,0 +1,59 @@
+---
+title: "Diptera Genome Sizes"
+author: "Erick Alvarez"
+date: "2024-10-06"
+output: 
+    html_document:
+        theme: paper
+        highlight: tango
+        toc: true
+        toc_float:
+            collapsed: true
+        number_sections: true
+        code_download: true
+        df_print: kable
+        code_folding: show
+        mode: selfcontained
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning=FALSE, message = FALSE)
+```
+
+
+```{r, echo=FALSE}
+library(tidyverse)
+library(reactable)
+options(scipen = 999)
+```
+
+# Load Data 
+```{r}
+erick_path <- "diptera_gs_8_26_24_3100.csv"
+dip_data <- read.csv(erick_path)
+
+```
+
+```{r}
+str(dip_data)
+dip_data$Family<-as.factor(dip_data$Family)
+ 
+length(levels(dip_data$Family))
+length(unique(dip_data$Species))
+
+example_plot <- ggplot(dip_data, aes(x = Family, y = Bp)) +
+  geom_point() +
+  coord_flip() +
+  ggtitle("Genome Sizes for Various Diptera Families")
+
+ggsave("diptera_genome_sizes.png", plot = example_plot, width = 8, height = 6)
+
+length(unique(dip_data$Species[dip_data$Family=="Tephritidae"]))
+
+dip_data |>
+  filter(Family == "Scatopsidae") |>
+  select(Family, Species, C.value, Bp)
+
+
+```
+

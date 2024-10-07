@@ -1,0 +1,11 @@
+BIOL 3100 FINAL PROJECT IDEA (10-6-24)
+
+As a member of Dr. Carl Hjelmen's lab at UVU, I am working on genomics research analyzing the correlation between organism complexity and genome size. I have begun investigating the world of extremophile insects and their genome sizes (which are presumed smaller than other insects). My primary focus is a halophilic species of fly in Utah known as Ephydra cinerea, the majority species of brine fly that occupies the shores of the Great Salt Lake. Although I have collected the flies, I am still in the process of curating the species and will soon (hopefully) sequence its whole genome (including the mitochondrial genome). After which I hope to compare that sequence to those of other flies/insects to investigate conserved genes amongst extremophiles adapted to survive different environments. 
+
+2) For the BIOL 3100 final project, I hope to gather and possibly create an evolutionary phylogeny of extremophile genome sizes (not including the brine flies I am currently working on). 
+
+3) In preparation for whole genome sequencing, I hope to gather whole genome size data on different extremophiles (and "normal" flies) such as: Phylum, Class, Order, Family, Species, C.value (DNA weight), Bp (# of base pairs), Sex, Methods (of calculating genome size), Reference (DOI). I can parse through the NIH genome database for more data and use the fly dataset Dr. Hjelmen has compiled over the past few semesters (which consists of various families only from the order Diptera). It will be organized as a .csv file for easy access and R manipulation. 
+
+4) Dr. Hjelmen's dataset and my current dataset (of flies I am adding onto Dr. Hjelmen's data) are titled: diptera_gs_8_26_24_3100.csv (Hjelmen's data) and lacking_diptera_gs_9_3_24_3100 (my data), respectively. I am keeping the second data set as a MacOS Numbers file for ease-of-use on my end. When it is ready to be merged with the larger dataset, I will convert it into a .csv file (sorry for the inconvenience). Both datasets are uploaded under the Assignment_4 directory (same WD as this .txt file). 
+
+5) The example plot is under the Assignment_4 directory (same WD as this .txt file); as well as the .Rmd script used to make the plot (diptera_genome_sizes_3100.Rmd). 
