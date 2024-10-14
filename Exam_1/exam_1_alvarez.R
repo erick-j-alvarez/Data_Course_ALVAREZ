@@ -4,6 +4,8 @@
 # read the cleaned_covid_data csv file into RStudio 
 cleaned_covid_data <- read.csv("cleaned_covid_data.csv")
 
+View(cleaned_covid_data)
+
 str(cleaned_covid_data)
 
 #### task_2 ####
@@ -37,7 +39,7 @@ A_states |>
   labs(title = "COVID-19 Deaths Over Time in A-States",
        x = "Date", 
        y = "Number of Deaths") +
-  scale_x_date(limits = c(min_date, max_date),  # set limits from the earliest to latest month
+  scale_x_date(limits = c(min_date, max_date),  # set limits from the earliest to latest year-month
                breaks = seq(from = min_date, to = max_date, by = "3 months"),  # breaks every 3 months
                date_labels = "%Y-%m") +  # format date labels 
   theme_minimal() +
@@ -48,7 +50,7 @@ A_states |>
 
 # find the peak Case_Fatality_Ratio for each state
 state_max_fatality_rate <- cleaned_covid_data |>
-  group_by(Province_State) |>  # group by state 
+  group_by(Province_State) |> 
   summarize(Maximum_Fatality_Ratio = max(Case_Fatality_Ratio, na.rm = TRUE)) |> # ignore any NA values
   ungroup() |> # ungroup the data 
   arrange(desc(Maximum_Fatality_Ratio))  # arrange values in descending order
@@ -75,7 +77,7 @@ state_max_fatality_rate |>
 
 #### task_6_BONUS ####
 
-# convert Last_Update to Date data type 
+# convert Last_Update to 'Date' data type 
 cleaned_covid_data <- cleaned_covid_data |>
   mutate(Last_Update = as.Date(Last_Update))
 
@@ -90,7 +92,7 @@ cumulative_deaths |>
   ggplot(aes(x = Last_Update, y = Total_Deaths)) +
   geom_line(color = "maroon", size = 1) + # using a line plot 
   labs(title = "Cumulative Deaths from COVID-19 in the U.S.",
-       x = "Year",
+       x = "Year\nApril 2020 - January 2022",
        y = "Total Deaths") +
   scale_x_date(date_labels = "%Y", 
                date_breaks = "1 year", 
