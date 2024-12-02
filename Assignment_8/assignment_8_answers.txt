@@ -1,0 +1,26 @@
+Assignment 8 (12/2/14) - Erick Alvarez
+
+
+1) Are any of your predicted response values from your best model scientifically meaningless? Explain.
+
+My best measured model was my 4th which used the following linear model formula: lm(GrowthRate ~ Light + Nitrogen + Humidity, data = mushroom_dat). The formula models GrowthRate as a function of Light, Nitrogen, and Humidity. With that said, when the individual variables were compared to both hypothetical and original values for either Light, Nitrogen, and Humidity individually, the plot for nitrogen alone seemed irrelevant. While the other variables had distinct increases across with their predicted GrowthRate values (as seen with all of the predicted values), they made sense as they were proportional to the real values. For example, higher light meant higher growth rates, a hypothetical input of 15 stayed between the input of 10 and 20 as seen with the real input. Humidity came with similar results. However, the hypothetical values for nitrogen resulted in higher/same values for the predicted GrowthRate across the board while the real values resulted in lower/same values for the real GrowthRate. This indicates to me that the nitrogen levels in my models were meaningless, something that is countered by my tested plots with the original data. 
+
+
+2) In your plots, did you find any non-linear relationships? Do a bit of research online and give a link to at least one resource explaining how to deal with modeling non-linear relationships in R.
+
+The most obvious example is between GrowthRate and Nitrogen levels. As already described in answer #1 above, and as seen in my other plots, Nitrogen levels don't seem to have a direct correlation to the change in GrowthRate, at least not on its own. According to https://www.geeksforgeeks.org/non-linear-regression-in-r/, some good ways for dealing with non-linear regression (as it tends to be more complex) is to use exponential regression, polynomial regression of degree 2, cubic regression, and quadratic regression. The details are discussed in the article and are all designed to be implemented in R. 
+
+
+3) Write the code you would use to model the data found in “/Data/non_linear_relationship.csv” with a linear model (there are a few ways of doing this)
+
+# Load the non-linear data 
+df <- read.csv("../Data/non_linear_relationship.csv")
+
+# Fit a linear model with a quadratic polynomial term for predictor (plot came out similarly with a cubic polynomial term)
+lm_poly_model <- lm(response ~ poly(predictor, 2), data = df)
+
+# Summarize the model
+summary(lm_poly_model)
+
+# Plot the polynomial fit (due to simplicity, used base R instead of ggplot2)
+plot(df$predictor, df$response, main="Predictor vs. Response", xlab="Predictor", ylab="Response", pch=19)
