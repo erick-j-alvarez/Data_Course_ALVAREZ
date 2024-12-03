@@ -1,0 +1,175 @@
+---
+title: "BIOL 3100 - Exam 3"
+author: "Erick Alvarez"
+date: "December 2, 2024"
+output: 
+    html_document:
+        theme: paper
+        highlight: tango
+        toc: true
+        toc_float:
+            collapsed: true
+        number_sections: false
+        code_download: true
+        df_print: kable
+        code_folding: show
+        mode: selfcontained
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+```{r, echo = FALSE}
+# load all necessary libraries within this code chunk 
+library(tidyverse)
+library(broom)
+library(janitor)
+
+# converts all numbers to standard notation 
+options(scipen = 999)
+
+```
+
+# Faculty Salaries Data 
+## Tidying Data Frame 
+For the initial portion of this exam, we must read in and tidy our faculty salaries data to a format in which we can more easily read and utilize. The original file being examined is titled "FacultySalaries_1995.csv". It contains college faculty salaries, total compensation, and faculty count from 1995, by Ranks, Tier, and State.
+
+- **Rank** 
+  - Refers to faculty rank: Assistant (not tenured), Associate (tenured), and Full (been around for a long time) professorships 
+    - Unsure as to what 'All' is referring to within this context  
+- **Tier** 
+  - Refers to amount of funding dedicated to research vs. teaching 
+    - Tier I = universities that spend more on research than teaching, and also award PhD degrees 
+
+Below is a view of how the data is formatted in the raw data frame and the structure of its data types before we make any changes: 
+
+```{r, echo = FALSE}
+# read in data frame 
+faculty_dat <- read.csv("FacultySalaries_1995.csv")
+
+# view a portion of the data 
+head(faculty_dat)
+
+# verify data structure
+str(faculty_dat)
+
+```
+
+A bit unpleasant to the eye, no? Let's fix that! We will now work on cleaning the data to a preferred long format fit for our needs. 
+  
+- Comments within the code add context to what and why we are doing what we are doing 
+
+```{r, results = 'hide'}
+# fixes the column names so they are in Snake Case notation 
+clean_faculty_dat <- clean_names(faculty_dat) |>
+  select(-num_instructors) # we will not be needing this value so remove it; especially since it will simply have NA values for salary and compensation 
+
+# converts the data into long format 
+clean_long_fac_dat <- clean_faculty_dat |>
+  pivot_longer(
+    cols = starts_with("avg_") | starts_with("num_"),  # include all salary, compensation, and faculty count columns
+    names_to = "faculty_info",      # create a column for the faculty information (salary, compensation, etc.)
+    values_to = "info_value") |>    # store the values (salary, compensation, etc.)
+  mutate(
+    faculty_rank = case_when(
+      grepl("full_prof", faculty_info) ~ "Full",
+      grepl("assoc_prof", faculty_info) ~ "Associate",
+      grepl("assist_prof", faculty_info) ~ "Assistant",
+      grepl("_all", faculty_info) ~ "All",  # this covers the "avg_prof_salary_all" and "num_faculty_all"
+      TRUE ~ NA_character_
+    ),
+    info_type = case_when(
+      grepl("salary", faculty_info) ~ "Salary",
+      grepl("comp", faculty_info) ~ "Compensation",
+      grepl("num", faculty_info) ~ "Faculty Count",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  select(-faculty_info)  # remove the original "faculty_info" column to clean up the data
+
+# rearrange the columns, change the data types, and add a unique id column 
+tidy_dat <- clean_long_fac_dat |>
+  select(fed_id, univ_name, state, tier, faculty_rank, info_type, info_value) |>
+  mutate(row_id = row_number(), # add a key column `row_id` starting from 1
+         tier = as.factor(tier), # change these 3 categorical columns into factors 
+         faculty_rank = as.factor(faculty_rank),  
+         info_type = as.factor(info_type)) |> 
+  select(row_id, everything()) 
+
+# examine data structure 
+str(tidy_dat)
+
+```
+
+The following is a portion of the data we have now cleaned up for reference as well as the new data structure: 
+
+```{r, echo = FALSE}
+# the first 6 rows of our data frame 
+head(tidy_dat, 12)
+
+# view the new data structure 
+str(tidy_dat)
+
+```
+
+## Re-creating Graph 
+As described in the assignment, we want to re-create the following graph: 
+
+```{r, echo = FALSE}
+# demonstrates the reference graph we wish to re-create 
+knitr::include_graphics("Fig1.png")
+
+```
+
+We want to create a faceted box plot that demonstrates the correlation between school tier, faculty rank, and faculty salary. Here is the code that accomplishes that re-creation along with the produced graph: 
+
+```{r}
+# filter for salary data and exclude tier VIIB and faculty_rank "All"
+salary_data <- tidy_dat |> 
+  filter(info_type == "Salary") |>  # keep only salary data
+  filter(tier != "VIIB") |>         # exclude tier VIIB
+  filter(faculty_rank != "All")     # exclude faculty rank "All"
+
+# creating the faceted box plot 
+salary_box_plot <- salary_data |> 
+  ggplot(aes(x = faculty_rank, y = info_value, fill = faculty_rank)) +
+  geom_boxplot() +  # create a box plot 
+  facet_wrap(~ tier, scales = "free_x") +  # facet by school tier, with free x-axis
+  labs(
+    title = "Faculty Salary Distribution by School Tier and Faculty Rank",
+    x = "Rank",
+    y = "Salary"
+  ) +
+  scale_fill_discrete(name = "Rank") +  # change the legend title to "Rank"
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1) # rotate x-axis labels by 45 degrees
+  )
+
+# view the completed box plot 
+print(salary_box_plot)
+
+```
+
+As you can see, there are some subtle differences in formatting such as a less condensed graph and an included title, but I figured I would just make it look nice like this! 
+
+  - the graph still shows the exact same thing in the exact same way 
+  
+## Building an ANOVA Model
+
+To conclude our work with the faculties salary data, we want to build an ANOVA model that tests the influence of “State”, “Tier”, and “Rank” on “Salary” but should NOT include any interactions between those predictors. The following code accomplishes said task: 
+
+```{r}
+# perform an ANOVA model
+anova_model <- aov(info_value ~ state + tier + faculty_rank, data = salary_data) 
+# using salary_data as it is already formatted to exclude the "All" faculty rank and other info_values. However, we may want to include the VIIB school tier 
+
+# view the summary of the ANOVA model
+summary(anova_model)
+# BIG ISSUE: It is missing the two other tier factor levels and the 3rd faculty_rank factor. Why? Ask Dr. Liang! 
+# be sure to format it into a nice reactable once I get it working! 
+
+```
+
