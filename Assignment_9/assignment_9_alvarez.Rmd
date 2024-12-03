@@ -192,3 +192,5 @@ grad_dat |>
 
 I'm not including any summary statistics for the school rank as any important inference that could be made with categorical data can be easily seen through the graphed visual. 
 
+# **Important Note**
+YuYa Liang, the professor over this course, has stated that this assignment is actually optional for extra credit and not mandatory so I will not be completing the remainder of this work as I have plenty on my plate at the moment! Sorry (not sorry). 
