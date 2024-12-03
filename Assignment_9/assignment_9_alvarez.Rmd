@@ -1,0 +1,194 @@
+---
+title: "Graduate School Admissions Data Report"
+author: "Erick Alvarez"
+date: "December 2, 2024"
+output: 
+    html_document:
+        theme: paper
+        highlight: tango
+        toc: true
+        toc_float:
+            collapsed: true
+        number_sections: false
+        code_download: true
+        df_print: kable
+        code_folding: show
+        mode: selfcontained
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+```{r, echo = FALSE}
+# load all necessary libraries within this code chunk 
+library(tidyverse)
+library(reactable)
+library(GGally)
+library(skimr)
+
+# converts all numbers to standard notation 
+options(scipen = 999)
+
+```
+
+# Data Set
+The data set being examined consists of graduate school admissions. The CSV file being read in is titled "GradSchool_Admissions.csv" as found in the 'Data' folder in the BIOL 3100 GitHub repository. A portion of the data frame is seen below: 
+
+```{r, echo = FALSE}
+# read in the data 
+grad_dat <- read.csv("../Data/GradSchool_Admissions.csv")
+
+# show the first 6 rows of the data 
+head(grad_dat)
+
+```
+The data consists of 4 columns:
+
+1. **admit** 
+    - Reflects the acceptance or rejection of a student's application 
+      - 1 = Successful (Admitted)
+      - 0 = Failure (Rejected)
+      
+2. **gre**
+    - Reflects the GRE (Graduate Record Examination) score of the individual student 
+    
+3. **gpa** 
+    - Reflects the GPA (Grade Point Average) out of 4.0 of the individual student 
+    
+4. **rank** 
+    - Reflects the overall ranking of the student's undergraduate institution 
+      - Rank of 1 is "Top Tier"
+      - Lowest rank is 4 
+      
+Here is the data structure itself: 
+
+```{r, echo = FALSE}
+# show the structure of the data frame and its data types 
+str(grad_dat)
+
+```
+
+# Exploratory Data Analysis 
+I know I want to model admittance outcome predictions according to a student's institutional rank, GPA, and GRE score. However, I first need to determine which of the predictor variables has the strongest/weakest correlation to the response variable. 
+
+The following sections consist of the exploratory data analyses pertaining to these correlations. 
+
+## Distribution of Predictor Variables 
+Firstly, I will be investigating the distribution of the predictor variables on their own so I can infer any hidden trends or patterns that may be important in modeling the admittance predictions. 
+
+The following graph is a histogram of the GRE scores across the entire data set:
+
+```{r, echo = FALSE}
+grad_dat |>
+  ggplot(aes(x = gre)) +
+    geom_histogram(binwidth = 20, fill = "lightblue", color = "blue") +
+    labs(title = "Histogram of GRE Scores", x = "GRE Score", y = "Number of Students") +
+    theme_minimal()
+
+```
+
+The following table also contains the summary statistics of the same GRE distribution:
+
+```{r, echo = FALSE}
+# calculate summary statistics for GRE scores
+gre_summary_stats <- grad_dat |>
+  summarize(
+    Mean = mean(gre, na.rm = TRUE),
+    Median = median(gre, na.rm = TRUE),
+    SD = sd(gre, na.rm = TRUE),
+    Min = min(gre, na.rm = TRUE),
+    Max = max(gre, na.rm = TRUE),
+    Range = max(gre, na.rm = TRUE) - min(gre, na.rm = TRUE),
+    Q1 = quantile(gre, 0.25, na.rm = TRUE),
+    Q3 = quantile(gre, 0.75, na.rm = TRUE),
+    IQR = IQR(gre, na.rm = TRUE)
+  )
+
+# create a reactable table for the summary statistics
+reactable(gre_summary_stats, 
+          columns = list(
+            Mean = colDef(name = "Mean"),
+            Median = colDef(name = "Median"),
+            SD = colDef(name = "Standard Deviation"),
+            Min = colDef(name = "Min"),
+            Max = colDef(name = "Max"),
+            Range = colDef(name = "Range"),
+            Q1 = colDef(name = "25th Percentile (Q1)"),
+            Q3 = colDef(name = "75th Percentile (Q3)"),
+            IQR = colDef(name = "Interquartile Range (IQR)")
+          ),
+          theme = reactableTheme(
+            color = "#2a3d47", 
+            borderColor = "#e0e0e0", 
+            highlightColor = "#f7f7f7"
+          )
+)
+
+```
+
+Next is a density plot showing the distribution of the GPA values. I used a density plot since we are dealing with float values instead of whole integers:
+
+```{r, echo = FALSE}
+grad_dat |> 
+  ggplot(aes(x = gpa)) +
+    geom_density(fill = "pink", color = "red", alpha = 0.5) +
+    labs(title = "Density Plot of GPA", x = "GPA", y = "Density") +
+    theme_minimal()
+
+```
+
+The following table also contains the summary statistics of the same GPA distribution:
+
+```{r, echo = FALSE}
+# calculate summary statistics for GPA scores
+gpa_summary_stats <- grad_dat |>
+  summarize(
+    Mean = mean(gpa, na.rm = TRUE),
+    Median = median(gpa, na.rm = TRUE),
+    SD = sd(gpa, na.rm = TRUE),
+    Min = min(gpa, na.rm = TRUE),
+    Max = max(gpa, na.rm = TRUE),
+    Range = max(gpa, na.rm = TRUE) - min(gpa, na.rm = TRUE),
+    Q1 = quantile(gpa, 0.25, na.rm = TRUE),
+    Q3 = quantile(gpa, 0.75, na.rm = TRUE),
+    IQR = IQR(gpa, na.rm = TRUE)
+  )
+
+# create a reactable table for the summary statistics
+reactable(gpa_summary_stats, 
+          columns = list(
+            Mean = colDef(name = "Mean"),
+            Median = colDef(name = "Median"),
+            SD = colDef(name = "Standard Deviation"),
+            Min = colDef(name = "Min"),
+            Max = colDef(name = "Max"),
+            Range = colDef(name = "Range"),
+            Q1 = colDef(name = "25th Percentile (Q1)"),
+            Q3 = colDef(name = "75th Percentile (Q3)"),
+            IQR = colDef(name = "Interquartile Range (IQR)")
+          ),
+          theme = reactableTheme(
+            color = "#2a3d47", 
+            borderColor = "#e0e0e0", 
+            highlightColor = "#f7f7f7"
+          )
+)
+
+```
+
+Lastly, here is the distribution of undergraduate institutional rankings: 
+
+```{r, echo = FALSE}
+grad_dat |>
+  ggplot(aes(x = factor(rank))) +  # Use 'factor' to treat rank as a categorical variable
+    geom_bar(fill = "darkgreen", color = "lightgreen") +
+    labs(title = "Distribution of School Ranks", x = "Rank", y = "Number of Students") +
+    theme_minimal() +
+    annotate("text", x = 2.6, y = 60, label = "1 = Top-Tier\n4 = Low-Tier", color = "black", size = 5, hjust = 0)
+
+```
+
+I'm not including any summary statistics for the school rank as any important inference that could be made with categorical data can be easily seen through the graphed visual. 
+
